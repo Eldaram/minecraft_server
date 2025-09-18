@@ -35,6 +35,20 @@ int readVarInt(int socket) {
     return result;
 }
 
+void writeVarIntTool(std::string& content, uint32_t length) {
+    while (true)
+    {
+        if((length & ~SEGMENT_BITS) == 0) {
+            content.push_back(static_cast<char>(length));
+            return;
+        }
+
+        content.push_back(static_cast<char>((length & SEGMENT_BITS) | CONTINUE_BIT));
+
+        length >>= 7;
+    }
+}
+
 char getHeaderBufferSize(std::string data)
 {
     return static_cast<char>(data.size());

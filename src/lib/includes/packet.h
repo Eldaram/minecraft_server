@@ -30,6 +30,9 @@ public:
     // Setter for fullSize
     void setFullSize(uint32_t size);
 
+    // Reset fullSize to match current content size
+    void resetFullSize();
+
     // Setter for packetId
     void setPacketId(uint16_t id);
 
@@ -42,12 +45,26 @@ public:
     //reset current position in content
     void resetContentPos();
 
+    //read functions
     //read string from content
     std::string readString(int length = 0);
 
     //read uuid from content
     //it return the UUID as the char decimal representation without dashes
     std::string readUUID();
+
+    //write varint to content
+    void writeVarInt(uint32_t value);
+
+    //write string to content
+    void writeString(const std::string& str, bool needLength = true);
+
+    //write uuid to content
+    //it expect the UUID as the char decimal representation without dashes
+    void writeUUID(const std::string& uuid);
+
+    //get the user properties from the api and write them to content
+    bool writeUserProperties(const std::string& uuid);
 
     // Send packet
     ssize_t sendPacket(int socket);

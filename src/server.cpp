@@ -5,7 +5,7 @@
 #include <response.h>
 #include <player.h>
 
-#define PORT 25562
+#define PORT 25565
 #define MAX_PLAYERS 5
 
 #include <cstring>
@@ -43,6 +43,8 @@ bool interpretPacket(int clientSocket, Packet& packet) {
                 players[numPlayers++] = newPlayer;
                 cout << "Player " << newPlayer->getName() << " with UUID " << parseUUID(newPlayer->getUUID()) << " is connecting." << endl;
 
+                sendLoginSuccess(clientSocket, newPlayer->getUUID(), newPlayer->getName());
+                cout << "Login success sent." << endl;
             }
             
             // login state

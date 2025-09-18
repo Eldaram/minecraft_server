@@ -1,6 +1,9 @@
 #ifndef TOOLS_H
 #define TOOLS_H
 
+#define SEGMENT_BITS 0x7F
+#define CONTINUE_BIT 0x80
+
 #include <cstring>
 #include <sstream>
 #include <iostream>
@@ -29,7 +32,11 @@ char getHeaderBufferSize(std::string data);
 //parse UUID from string to the char decimal representation without dashes
 std::string parseUUID(const std::string& uuid);
 
-// Function to get the player detail from Mojang API with the given UUID
+//write int to content
+void writeVarIntTool(std::string& content, uint32_t length);
+
+// Function to get the player detail from Mojang API with the given UUID in proper string format (not char array)
+// use parseUUID beforehand if needed
 Json::Value getPlayerDetailsFromMojangAPI(const std::string& uuid);
 
 #endif // TOOLS_H

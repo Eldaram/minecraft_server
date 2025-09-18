@@ -10,8 +10,11 @@
 
 using namespace std;
 
+// TODO: add parameters for max players and online players
 void sendHandShake(int clientSocket);
 
 void sendPong(int clientSocket, string data);
+
+void sendLoginSuccess(int clientSocket, string uuid, string name);
 
 #endif // RESPONSE_H

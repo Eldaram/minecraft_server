@@ -15,3 +15,13 @@ void sendPong(int clientSocket, string data) {
     Packet pongPacket(0x01, data);
     pongPacket.sendPacket(clientSocket);
 }
+
+void sendLoginSuccess(int clientSocket, string uuid, string name) {
+    Packet loginSuccessPacket(0x02, string());
+    loginSuccessPacket.writeUUID(uuid);
+    loginSuccessPacket.writeString(name);
+    loginSuccessPacket.writeVarInt(0); // No properties
+    //loginSuccessPacket.writeUserProperties(uuid);
+
+    loginSuccessPacket.sendPacket(clientSocket);
+}

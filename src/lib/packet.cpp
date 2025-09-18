@@ -1,7 +1,6 @@
 #include "packet.h"
 #include "tools.h"
 
-// Constructor
 Packet::Packet(uint32_t size, uint16_t id, const std::string& data)
     : fullSize(size), packetId(id), content(data) {}
 
@@ -27,37 +26,34 @@ Packet::Packet(uint16_t id, const std::string& data)
     fullSize = static_cast<uint32_t>(data.size() + (id >= 0x80 ? 2 : 1));
 }
 
-// Getter for fullSize
 uint32_t Packet::getFullSize() const {
     return fullSize;
 }
 
-// Getter for packetId
 uint16_t Packet::getPacketId() const {
     return packetId;
 }
 
-// Getter for content
 const std::string& Packet::getContent() const {
     return content;
 }
 
-// Setter for fullSize
 void Packet::setFullSize(uint32_t size) {
     fullSize = size;
 }
 
-// Setter for packetId
+void Packet::resetFullSize() {
+    fullSize = static_cast<uint32_t>(content.size() + (packetId >= 0x80 ? 2 : 1));
+}
+
 void Packet::setPacketId(uint16_t id) {
     packetId = id;
 }
 
-// Setter for content
 void Packet::setContent(const std::string& data) {
     content = data;
 }
 
-// Display packet details
 void Packet::display() const {
     std::cout << "Packet ID: " << packetId << ", Full Size: " << fullSize << " bytes, Content: " << content << std::endl;
     for (size_t i = 0; i < fullSize; i++)
@@ -68,39 +64,25 @@ void Packet::display() const {
 ssize_t Packet::sendPacket(int socket) {
     // Prepare buffer
     std::string buffer;
+
+    resetFullSize();
     
     // Encode fullSize as VarInt
-    uint32_t size = fullSize;
-    do {
-        uint8_t temp = size & 0b01111111;
-        size >>= 7;
-        if (size != 0) {
-            temp |= 0b10000000;
-        }
-        buffer.push_back(static_cast<char>(temp));
-    } while (size != 0);
+    writeVarIntTool(buffer, fullSize);
     
     // Encode packetId as VarInt
-    size = packetId;
-    do {
-        uint8_t temp = size & 0b01111111;
-        size >>= 7;
-        if (size != 0) {
-            temp |= 0b10000000;
-        }
-        buffer.push_back(static_cast<char>(temp));
-    } while (size != 0);
+    writeVarIntTool(buffer, packetId);
     
     // Append content
     buffer += content;
 
     // Debug output
-    // for (size_t i = 0; i < buffer.length(); i++)
-    // {
-    //     std::cout << (static_cast<int>(buffer[i])) << " ";
-    // }
+    for (size_t i = 0; i < buffer.length(); i++)
+    {
+        std::cout << (static_cast<int>(buffer[i])) << " ";
+    }
     
-    // std::cout << "//" << std::endl;
+    std::cout << "//" << std::endl;
 
     std::cout << "Sending packet ID: " << packetId << ", Full Size: " << fullSize << " bytes" << std::endl;
 
@@ -139,4 +121,42 @@ std::string Packet::readString(int length) {
 
 std::string Packet::readUUID() {
     return readString(16);
+}
+
+void Packet::writeVarInt(uint32_t value) {
+    writeVarIntTool(content, value);
+}
+
+void Packet::writeString(const std::string& str, bool needLength) {
+    // Write length of the string as VarInt
+    if (needLength) {
+        uint32_t length = static_cast<uint32_t>(str.size());
+        writeVarInt(length);
+    }
+
+    // Write the string data
+    content += str;
+}
+
+void Packet::writeUUID(const std::string& uuid) {
+    writeString(uuid, false);
+}
+
+bool Packet::writeUserProperties(const std::string& uuid) {
+    Json::Value details = getPlayerDetailsFromMojangAPI(parseUUID(uuid));
+    if (details.isNull() || !details.isObject() || !details.isMember("properties") || !details["properties"].isArray()) {
+        std::cerr << "Failed to get valid user properties for UUID: " << uuid << std::endl;
+        return false;
+    }
+
+    std::string name = details["properties"][0]["name"].asString();
+    std::string value = details["properties"][0]["value"].asString();
+
+    uint32_t length = static_cast<uint32_t>(name.size()) + static_cast<uint32_t>(value.size()) + 1;
+    writeVarInt(length);
+    writeString(name, true);
+    writeString(value, true);
+    content.push_back(0); // Add a byte for optional signature (false)
+
+    return true;
 }
