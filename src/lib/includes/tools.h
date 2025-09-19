@@ -35,6 +35,12 @@ std::string parseUUID(const std::string& uuid);
 //write int to content
 void writeVarIntTool(std::string& content, uint32_t length);
 
+//write int to content
+void writeVarIntTool32(std::string& content, uint32_t length);
+
+//write int to content
+void writeVarIntTool64(std::string& content, uint64_t length);
+
 // Function to get the player detail from Mojang API with the given UUID in proper string format (not char array)
 // use parseUUID beforehand if needed
 Json::Value getPlayerDetailsFromMojangAPI(const std::string& uuid);

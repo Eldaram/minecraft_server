@@ -160,3 +160,13 @@ bool Packet::writeUserProperties(const std::string& uuid) {
 
     return true;
 }
+
+void Packet::writePrefixedArray(const std::string* arr, size_t rows, size_t cols) {
+    // Write number of rows as VarInt
+    writeVarInt(static_cast<uint32_t>(rows));
+
+    // Write each cell in the grid
+    for (size_t i = 0; i < rows * cols; ++i) {
+        writeString(arr[i]);
+    }
+}

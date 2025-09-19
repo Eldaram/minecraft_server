@@ -3,6 +3,8 @@
 
 #include "tools.h"
 #include "packet.h"
+#include "player.h"
+#include "gameEngine.h"
 
 #include <cstring>
 #include <iostream>
@@ -16,5 +18,11 @@ void sendHandShake(int clientSocket);
 void sendPong(int clientSocket, string data);
 
 void sendLoginSuccess(int clientSocket, string uuid, string name);
+
+void sendKnownPacks(int clientSocket);
+
+void sendFinishConfiguration(int clientSocket);
+
+void sendLoginPlay(int clientSocket, player* p);
 
 #endif // RESPONSE_H

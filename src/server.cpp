@@ -6,7 +6,6 @@
 #include <player.h>
 
 #define PORT 25565
-#define MAX_PLAYERS 5
 
 #include <cstring>
 #include <iostream>
@@ -18,7 +17,13 @@
 using namespace std;
 
 // client state management
-int state = 0;
+enum State {
+    HANDSHAKE = 0,
+    STATUS = 1,
+    LOGIN = 2,
+    PLAY = 3
+};
+int state = State::HANDSHAKE;
 
 // player management
 int numPlayers = 0;
@@ -29,14 +34,14 @@ bool interpretPacket(int clientSocket, Packet& packet) {
     switch (packet.getPacketId())
     {
     case 0x00: // Handshake
-        if (state == 0) {
+        if (state == State::HANDSHAKE) {
             state = packet.getContent()[packet.getContent().size() - 1];
         }
-        else if (state == 1) {
+        else if (state == State::STATUS) {
             sendHandShake(clientSocket);
-            state = 0;
+            state = State::HANDSHAKE;
         }
-        else if (state == 2) {
+        else if (state == State::LOGIN) {
             if (numPlayers < MAX_PLAYERS)
             {
                 player* newPlayer = new player(packet.readString(), packet.readUUID());
@@ -48,14 +53,27 @@ bool interpretPacket(int clientSocket, Packet& packet) {
             }
             
             // login state
-            state = 0;
+            state = State::HANDSHAKE;
         }
-        cout << "State: " << state << endl;
         break;
 
     case 0x01: // Ping
         sendPong(clientSocket, packet.getContent());
         return false; // close connection after pong
+
+    case 0x03: // (log) Login acknowledge OR (play) acknowledge finish config
+        if (state == State::LOGIN)
+            sendKnownPacks(clientSocket);
+        else if (state == State::PLAY)
+        {
+            /* code */
+        }
+        break;
+
+    case 0x07: //Serverbound known packs
+        sendFinishConfiguration(clientSocket);
+        state = State::PLAY;
+        break;
 
     default:
         break;
@@ -100,7 +118,7 @@ int main()
         }
         
         // closing the socket.
-        state = 0;
+        state = State::HANDSHAKE;
         cout << "Closing connection" << endl;
         close(clientSocket);
     }

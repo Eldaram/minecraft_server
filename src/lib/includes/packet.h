@@ -66,6 +66,9 @@ public:
     //get the user properties from the api and write them to content
     bool writeUserProperties(const std::string& uuid);
 
+    //Write prefixed array to content
+    void writePrefixedArray(const std::string* arr, size_t rows, size_t cols);
+
     // Send packet
     ssize_t sendPacket(int socket);
 };

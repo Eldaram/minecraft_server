@@ -46,6 +46,12 @@ target_include_directories(player PUBLIC includes)
 set_target_properties(player PROPERTIES PUBLIC_HEADER includes/player.h)
 set_target_properties(player PROPERTIES SOVERSION 1)
 
+# gameEngine library
+add_library(gameEngine gameEngine.cpp)
+target_include_directories(gameEngine PUBLIC includes)
+set_target_properties(gameEngine PROPERTIES PUBLIC_HEADER includes/gameEngine.h)
+set_target_properties(gameEngine PROPERTIES SOVERSION 1)
+
 install(TARGETS packet tools response player
   RUNTIME DESTINATION bin
   LIBRARY DESTINATION lib
